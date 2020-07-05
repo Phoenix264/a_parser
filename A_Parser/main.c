@@ -29,7 +29,6 @@ int main(int argc, char* argv[])
 			else if (result == SEARCH_ERROR)
 			{
 				fprintf(stdout, "Syntax error");
-				search_end();
 			}
 			else if (result == SEARCH_MEM_ERROR)
 			{
