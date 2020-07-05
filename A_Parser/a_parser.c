@@ -27,7 +27,7 @@ typedef struct
 	/// Количество составных элементов
 	uint32_t count;
 	/// Количество элементов в составных элементах
-	uint32_t* elements;
+	uint32_t elements[MAX_DEPTH];
 } ArrayElementS;
 
 /// Структура дерева информации об элементах
@@ -61,8 +61,6 @@ void search_end()
 	{
 		if (InfoTree.arrayElements[i].count > 0)
 		{
-			free(InfoTree.arrayElements[i].elements);
-			InfoTree.arrayElements[i].elements = 0;
 			InfoTree.arrayElements[i].count = 0;
 		}
 	}
@@ -79,7 +77,6 @@ static int start_array()
 	{
 		InfoTree.currentDepth = 1;
 		InfoTree.depth = 1;
-		InfoTree.arrayElements[0].elements = (uint32_t*)calloc(1, sizeof(uint32_t));
 		InfoTree.arrayElements[0].count = 1;
 	}
 	else
@@ -87,9 +84,7 @@ static int start_array()
 		if (InfoTree.currentDepth < InfoTree.depth)
 		{
 			InfoTree.arrayElements[InfoTree.currentDepth].count++;
-			if (realloc(InfoTree.arrayElements[InfoTree.currentDepth].elements
-				, InfoTree.arrayElements[InfoTree.currentDepth].count *
-				sizeof(uint32_t)) == 0)
+			if (InfoTree.arrayElements[InfoTree.currentDepth].count > MAX_DEPTH)
 				return -1;
 			InfoTree.arrayElements[InfoTree.currentDepth].elements[InfoTree.arrayElements[InfoTree.currentDepth].count - 1] = 0;
 		}
@@ -98,7 +93,6 @@ static int start_array()
 			if (InfoTree.depth < MAX_DEPTH)
 			{
 				InfoTree.arrayElements[InfoTree.depth].count = 1;
-				InfoTree.arrayElements[InfoTree.depth].elements = (uint32_t*)calloc(1, sizeof(uint32_t));
 				InfoTree.depth++;
 			}
 			else
