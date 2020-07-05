@@ -19,7 +19,6 @@ a{i;i;a{i;a{i;}}i;a{i;}a{}}
 #include <stdint.h>
 
 #include "a_parser.h"
-#include "a_parser.h"
 
 /// Список элементов массивов одной глубины вложенности
 typedef struct
@@ -27,7 +26,7 @@ typedef struct
 	/// Количество составных элементов
 	uint32_t count;
 	/// Количество элементов в составных элементах
-	uint32_t elements[MAX_DEPTH];
+	uint32_t* elements;
 } ArrayElementS;
 
 /// Структура дерева информации об элементах
@@ -36,7 +35,7 @@ typedef struct
 	/// Максимальная глубина вложенности элементов
 	uint32_t depth;
 	///  Данные об элементах массива одной глубины вложенности
-	ArrayElementS arrayElements[MAX_DEPTH];
+	ArrayElementS* arrayElements;
 	///  Текущий разобранный эелемент
 	CalcStates currentState;
 	/// Текущая глубина вложенности разбираемого элемента
@@ -62,9 +61,12 @@ void search_end()
 		if (InfoTree.arrayElements[i].count > 0)
 		{
 			InfoTree.arrayElements[i].count = 0;
+			free(InfoTree.arrayElements[i].elements);
+			InfoTree.arrayElements[i].elements = 0;
 		}
 	}
-
+	free(InfoTree.arrayElements);
+	InfoTree.arrayElements = 0;
 	InfoTree.depth = 0;
 	InfoTree.currentState = UNKNOWN_STATE;
 	InfoTree.currentDepth = 0;
@@ -77,26 +79,42 @@ static int start_array()
 	{
 		InfoTree.currentDepth = 1;
 		InfoTree.depth = 1;
+		InfoTree.arrayElements = calloc(1, sizeof(ArrayElementS));
 		InfoTree.arrayElements[0].count = 1;
+		InfoTree.arrayElements[0].elements = calloc(1, sizeof(uint32_t));
+
+		if ((InfoTree.arrayElements == 0) || (InfoTree.arrayElements[0].elements == 0))
+		{
+			return -1;
+		}
 	}
 	else
 	{
 		if (InfoTree.currentDepth < InfoTree.depth)
 		{
 			InfoTree.arrayElements[InfoTree.currentDepth].count++;
-			if (InfoTree.arrayElements[InfoTree.currentDepth].count > MAX_DEPTH)
+			uint32_t* newElements = realloc(InfoTree.arrayElements[InfoTree.currentDepth].elements
+				, InfoTree.arrayElements[InfoTree.currentDepth].count *
+				sizeof(uint32_t));
+
+			if (newElements == 0)
 				return -1;
+			else
+				InfoTree.arrayElements[InfoTree.currentDepth].elements = newElements;
+
 			InfoTree.arrayElements[InfoTree.currentDepth].elements[InfoTree.arrayElements[InfoTree.currentDepth].count - 1] = 0;
 		}
 		else
 		{
-			if (InfoTree.depth < MAX_DEPTH)
-			{
-				InfoTree.arrayElements[InfoTree.depth].count = 1;
-				InfoTree.depth++;
-			}
+			InfoTree.depth++;
+			ArrayElementS* newArrayElements = realloc(InfoTree.arrayElements, (InfoTree.depth) * sizeof(ArrayElementS));
+			if (newArrayElements == 0)
+				return 1;
 			else
-				return -1;
+				InfoTree.arrayElements = newArrayElements;
+
+			InfoTree.arrayElements[InfoTree.depth-1].count = 1;
+			InfoTree.arrayElements[InfoTree.depth-1].elements = (uint32_t*)calloc(1, sizeof(uint32_t));
 
 		}
 		InfoTree.currentDepth++;

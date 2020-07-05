@@ -34,7 +34,6 @@ int main(int argc, char* argv[])
 			{
 				fprintf(stdout, "Memory error");
 			}
-
 			else
 			{
 				fprintf(stdout, "Unknown error");
@@ -46,6 +45,8 @@ int main(int argc, char* argv[])
 
 	print_array();
 	search_end();
+
+
 
 	return 0;
 }
