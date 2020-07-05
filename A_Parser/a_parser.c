@@ -109,12 +109,15 @@ static int start_array()
 			InfoTree.depth++;
 			ArrayElementS* newArrayElements = realloc(InfoTree.arrayElements, (InfoTree.depth) * sizeof(ArrayElementS));
 			if (newArrayElements == 0)
-				return 1;
+				return -1;
 			else
 				InfoTree.arrayElements = newArrayElements;
 
 			InfoTree.arrayElements[InfoTree.depth-1].count = 1;
 			InfoTree.arrayElements[InfoTree.depth-1].elements = (uint32_t*)calloc(1, sizeof(uint32_t));
+
+			if (InfoTree.arrayElements[InfoTree.depth - 1].elements == 0)
+				return -1;
 
 		}
 		InfoTree.currentDepth++;
